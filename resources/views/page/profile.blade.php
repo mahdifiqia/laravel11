@@ -1,29 +1,28 @@
 @extends('layouts.app')
 
-@section('title', 'Profile')
+@section('title', 'Profile Mahasiswa')
 
 @section('content')
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card shadow-sm border-0">
-            <div class="card-header bg-white text-center py-4">
-                <div class="d-flex justify-content-center mb-3">
-                    <img src="{{ asset('bootstrap-5.3.8-dist/image/imeg.jpg') }}"
-                        alt="Foto mahasiswa"
-                        class="rounded-circle img-thumbnail border border-3 border-primary"
-                        style="width: 120px; height: 120px; object-fit: cover;">
-                </div>
-                <h5 class="card-title mb-4">Profile Mahasiswa</h5>
-                <span class="badge bg-success">{{ $mahasiswa['status'] }}</span>
-            </div>
-            <div class="card-body text-center">
-                <p class="card-text"><strong>Nama:</strong> {{ $mahasiswa['nama'] }}</p>
-                <p class="card-text"><strong>NIM:</strong> {{ $mahasiswa['nim'] }}</p>
-                <p class="card-text"><strong>Prodi:</strong> {{ $mahasiswa['prodi'] }}</p>
-                <p class="card-text"><strong>Email:</strong> {{ $mahasiswa['email'] }}</p>
-                <p class="card-text"><strong>Kampus:</strong> {{ $mahasiswa['kampus'] }}</p>
-            </div>
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 70vh;">
+    <div class="card shadow-sm border-0 p-4 text-center" style="width: 100%; max-width: 500px;">
+        
+        <!-- Bagian Foto Profil yang sudah disesuaikan posisinya -->
+        <div class="mb-3">
+            <img src="{{ $mahasiswa['foto'] }}" alt="Foto {{ $mahasiswa['nama'] }}" class="rounded-circle shadow" style="width: 150px; height: 150px; object-fit: cover; object-position: center 20%;">
         </div>
+
+        <h4 class="fw-bold mb-1">{{ $mahasiswa['nama'] }}</h4>
+        <p class="text-muted mb-2">NIM: {{ $mahasiswa['nim'] }}</p>
+        
+        <div class="mb-3">
+            <span class="badge bg-success">{{ $mahasiswa['status'] }}</span>
+        </div>
+
+        <ul class="list-group list-group-flush text-start">
+            <li class="list-group-item"><strong>Prodi:</strong> {{ $mahasiswa['prodi'] }}</li>
+            <li class="list-group-item"><strong>Email:</strong> {{ $mahasiswa['email'] }}</li>
+            <li class="list-group-item"><strong>Kampus:</strong> {{ $mahasiswa['kampus'] }}</li>
+        </ul>
     </div>
 </div>
 @endsection

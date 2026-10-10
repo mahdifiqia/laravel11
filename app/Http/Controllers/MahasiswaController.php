@@ -8,17 +8,16 @@ class MahasiswaController extends Controller
 {
     public function index()
     {
-
         $mahasiswa = [
-            'nama' => 'Razan Muhammad Al-azzam',
-            'nim' => '251011701090',
+            'nama' => 'Muhammad Mahdi Mahda Fiqia',
+            'nim' => '251011700790',
             'prodi' => 'Sistem Informasi',
-            'email' => 'razan.alazzam@example.com',
+            'email' => 'mahdi@example.com',
             'kampus' => 'Universitas Pamulang (UNPAM)',
-            'status' => 'Aktif'
+            'status' => 'Aktif',
+            'foto' => asset('images/mahdi-foto.jpeg') // Menggunakan helper asset() agar terbaca dari folder public/images/
         ];
 
-       
-       return view('mahasiswa', compact('mahasiswa'));
+        return view('page.profile', compact('mahasiswa'));
     }
 }
