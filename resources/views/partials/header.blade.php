@@ -5,7 +5,7 @@
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-ul ms-auto d-flex list-unstyled m-0 gap-3">
+      <ul class="navbar-ul ms-auto d-flex align-items-center list-unstyled m-0 gap-3">
         <li class="nav-item">
           <a class="nav-link text-white" href="/">Home</a>
         </li>
@@ -17,6 +17,10 @@
         </li>
         <li class="nav-item">
           <a class="nav-link text-white" href="/about">About</a>
+        </li>
+        <!-- Tombol Admin Panel Ditambahkan Di Sini -->
+        <li class="nav-item ms-lg-2">
+          <a href="{{ route('admin.home') }}" class="btn btn-warning text-dark fw-semibold px-3 py-1">Admin Panel</a>
         </li>
       </ul>
     </div>

@@ -2,101 +2,129 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MahasiswaController;
+use App\Http\Controllers\ProjectController;
+use Illuminate\Http\Request;
 
+// Route Halaman Publik / Utama
 Route::get('/', function () {
     return view('page.home');
 });
 
-// Route profile diubah agar memanggil MahasiswaController
 Route::get('/profile', [MahasiswaController::class, 'index']);
-
-Route::get('/project', function () {
-    $projects = [
-        [
-            'id' => 1,
-            'title' => 'Sistem Informasi AKademik',
-            'status' => 'In progress',
-            'description' => 'Aplikasi berbasis web untuk pengelolaan data mahasiswa, jadwal kuliah, dan nilai.',
-            'tech' => 'Laravel & Bootstrap',
-            'image' => asset('images/project1.jpg')
-        ],
-        [
-            'id' => 2,
-            'title' => 'E-Commerce SEO Optimization',
-            'status' => 'In progress',
-            'description' => 'Aplikasi optimalisasi struktur heading dan indexing katalog produk online shop.',
-            'tech' => 'PHP & Google Search Console',
-            'image' => asset('images/project2.jpg')
-        ],
-        [
-            'id' => 3,
-            'title' => 'Redesign Cover dan Branding',
-            'status' => 'Selesai',
-            'description' => 'Perancangan elemen grafis personal branding dan aset media sosial.',
-            'tech' => 'Figma & Canva',
-            'image' => asset('images/project3.jpg')
-        ],
-        [
-            'id' => 4,
-            'title' => 'Aplikasi Kasir Toko Ponsel',
-            'status' => 'Selesai',
-            'description' => 'Sistem Point of Sales (POS) berbasis web untuk transaksi dan pencatatan stok barang.',
-            'tech' => 'PHP & MySQL',
-            'image' => asset('images/project4.jpg')
-        ],
-        [
-            'id' => 5,
-            'title' => 'Portal Berita Kampus UNPAM',
-            'status' => 'Selesai',
-            'description' => 'Platform publikasi artikel, pengumuman, dan berita seputar kegiatan mahasiswa.',
-            'tech' => 'Laravel & Tailwind CSS',
-            'image' => asset('images/project5.jpg')
-        ],
-        [
-            'id' => 6,
-            'title' => 'Sistem Inventaris Barang',
-            'status' => 'In progress',
-            'description' => 'Aplikasi manajemen aset dan peminjaman fasilitas di lingkungan prodi.',
-            'tech' => 'Laravel & Bootstrap',
-            'image' => asset('images/project6.jpg')
-        ],
-        [
-            'id' => 7,
-            'title' => 'Landing Page UMKM Lokal',
-            'status' => 'Selesai',
-            'description' => 'Desain halaman responsif untuk promosi produk usaha mikro masyarakat.',
-            'tech' => 'HTML, CSS & JavaScript',
-            'image' => asset('images/project7.jpg')
-        ],
-        [
-            'id' => 8,
-            'title' => 'Sistem Keuangan Pribadi',
-            'status' => 'Selesai',
-            'description' => 'Aplikasi pencatatan pemasukan, pengeluaran, dan grafik rekap bulanan.',
-            'tech' => 'Python & SQLite',
-            'image' => asset('images/project8.jpg')
-        ],
-        [
-            'id' => 9,
-            'title' => 'Aplikasi Tracking Fitness & Lari',
-            'status' => 'In progress',
-            'description' => 'Sistem pengolah data statistik jarak, rute, dan waktu latihan fisik.',
-            'tech' => 'JavaScript & Bootstrap',
-            'image' => asset('images/project9.jpg')
-        ],
-        [
-            'id' => 10,
-            'title' => 'Sistem Evaluasi Dosen UNPAM',
-            'status' => 'Selesai',
-            'description' => 'Kuesioner online performa pengajaran untuk peningkatan mutu akademik.',
-            'tech' => 'Laravel & MySQL',
-            'image' => asset('images/project10.jpg')
-        ],
-    ];
-
-    return view('page.project', compact('projects'));
-});
-
+Route::get('/project', [ProjectController::class, 'index']);
+Route::get('/project/{id}', [ProjectController::class, 'show'])->name('project.detail');
 Route::get('/about', function () {
     return view('page.about');
 });
+
+// Fungsi helper session untuk data projects
+function getProjectsSession() {
+    if (!session()->has('projects_data')) {
+        session()->put('projects_data', [
+            ['id' => 1, 'title' => 'Sistem ERP Tes', 'tech' => 'PHP, Laravel', 'description' => 'Sistem ERP untuk perusahaan manufaktur.', 'status' => 'active', 'image' => null],
+            ['id' => 2, 'title' => 'Sistem HRIS', 'tech' => 'JavaScript, React', 'description' => 'Sistem HRIS untuk mengelola data karyawan.', 'status' => 'active', 'image' => null],
+            ['id' => 3, 'title' => 'Sistem SCM', 'tech' => 'Python, Django', 'description' => 'Sistem SCM untuk mengelola rantai pasokan.', 'status' => 'active', 'image' => null],
+        ]);
+    }
+    return session('projects_data');
+}
+
+// Route Panel Admin
+Route::prefix('admin')->group(function(){
+    // Dashboard Admin
+    Route::get('/', function () {
+        return view('admin.dashboard');
+    })->name('admin.home');
+
+    // Data Project (Index)
+    Route::get('/projects', function () {
+        $projects = getProjectsSession();
+        return view('admin.projects.index', compact('projects'));
+    })->name('admin.projects.index');
+
+    // Form Tambah Project
+    Route::get('/projects/create', function () {
+        return view('admin.projects.create');
+    })->name('admin.projects.create');
+
+    // Proses Simpan Project
+    Route::post('/projects', function (Request $request) {
+        $projects = getProjectsSession();
+        $newId = count($projects) > 0 ? max(array_column($projects, 'id')) + 1 : 1;
+
+        $imageName = null;
+        if ($request->hasFile('image')) {
+            $imageName = time() . '.' . $request->image->extension();
+            $request->image->move(public_path('uploads/projects'), $imageName);
+        }
+
+        $newProject = [
+            'id' => $newId,
+            'title' => $request->input('title'),
+            'tech' => $request->input('tech'),
+            'description' => $request->input('description'),
+            'status' => $request->input('status'),
+            'image' => $imageName,
+        ];
+
+        $projects[] = $newProject;
+        session()->put('projects_data', $projects);
+
+        return redirect()->route('admin.projects.index')->with('success', 'Project berhasil ditambahkan!');
+    })->name('admin.projects.store');
+
+    // Form Edit Project
+    Route::get('/projects/{id}/edit', function ($id) {
+        $projects = getProjectsSession();
+        $project = null;
+        foreach ($projects as $p) {
+            if ($p['id'] == $id) {
+                $project = $p;
+                break;
+            }
+        }
+        if (!$project) {
+            $project = ['id' => $id, 'title' => '', 'tech' => '', 'description' => '', 'status' => 'active', 'image' => null];
+        }
+        return view('admin.projects.edit', compact('project'));
+    })->name('admin.projects.edit');
+
+    // Proses Update Project
+    Route::post('/projects/update/{id}', function (Request $request, $id) {
+        $projects = getProjectsSession();
+        foreach ($projects as &$p) {
+            if ($p['id'] == $id) {
+                $p['title'] = $request->input('title');
+                $p['tech'] = $request->input('tech');
+                $p['status'] = $request->input('status');
+                $p['description'] = $request->input('description');
+                
+                if ($request->hasFile('image')) {
+                    $imageName = time() . '.' . $request->image->extension();
+                    $request->image->move(public_path('uploads/projects'), $imageName);
+                    $p['image'] = $imageName;
+                }
+                break;
+            }
+        }
+        session()->put('projects_data', $projects);
+
+        return redirect()->route('admin.projects.index')->with('success', 'Project berhasil diperbarui!');
+    })->name('admin.projects.update');
+
+    // Proses Hapus Project
+    Route::delete('/projects/{id}', function ($id) {
+        $projects = getProjectsSession();
+        $projects = array_values(array_filter($projects, function ($p) use ($id) {
+            return $p['id'] != $id;
+        }));
+        session()->put('projects_data', $projects);
+
+        return redirect()->route('admin.projects.index')->with('success', 'Project berhasil dihapus!');
+    })->name('admin.projects.destroy');
+});
+
+// Route Logout (Mengarahkan kembali ke halaman utama / beranda)
+Route::get('/logout', function () {
+    return redirect('/');
+})->name('logout');
