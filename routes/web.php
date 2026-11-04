@@ -3,12 +3,13 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MahasiswaController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\Auth\AdminAuthController;
 use Illuminate\Http\Request;
 
-// Route Halaman Publik / Utama
+// --- RUTE PUBLIK (Bisa diakses siapa saja dari beranda) ---
 Route::get('/', function () {
     return view('page.home');
-});
+})->name('home');
 
 Route::get('/profile', [MahasiswaController::class, 'index']);
 Route::get('/project', [ProjectController::class, 'index']);
@@ -29,8 +30,22 @@ function getProjectsSession() {
     return session('projects_data');
 }
 
-// Route Panel Admin
-Route::prefix('admin')->group(function(){
+// --- RUTE AUTENTIKASI ADMIN ---
+Route::get('/admin/login', [AdminAuthController::class, 'showLoginForm'])->name('login');
+Route::post('/admin/login', [AdminAuthController::class, 'login'])->name('admin.login.submit');
+
+// Logout mengarahkan kembali ke beranda awal (home)
+Route::get('/logout', function (Request $request) {
+    \Illuminate\Support\Facades\Auth::logout();
+    $request->session()->invalidate();
+    $request->session()->regenerateToken();
+    return redirect()->route('home')->with('success', 'Berhasil logout ke beranda.');
+})->name('logout');
+
+
+// --- RUTE PANEL ADMIN (Dilindungi Middleware Auth - Wajib Login) ---
+Route::prefix('admin')->middleware('auth')->group(function(){
+
     // Dashboard Admin
     Route::get('/', function () {
         return view('admin.dashboard');
@@ -78,7 +93,8 @@ Route::prefix('admin')->group(function(){
         $projects = getProjectsSession();
         $project = null;
         foreach ($projects as $p) {
-            if ($p['id'] == $id) {
+            $pId = is_array($p) ? $p['id'] : $p->id;
+            if ($pId == $id) {
                 $project = $p;
                 break;
             }
@@ -93,7 +109,8 @@ Route::prefix('admin')->group(function(){
     Route::post('/projects/update/{id}', function (Request $request, $id) {
         $projects = getProjectsSession();
         foreach ($projects as &$p) {
-            if ($p['id'] == $id) {
+            $pId = is_array($p) ? $p['id'] : $p->id;
+            if ($pId == $id) {
                 $p['title'] = $request->input('title');
                 $p['tech'] = $request->input('tech');
                 $p['status'] = $request->input('status');
@@ -116,15 +133,12 @@ Route::prefix('admin')->group(function(){
     Route::delete('/projects/{id}', function ($id) {
         $projects = getProjectsSession();
         $projects = array_values(array_filter($projects, function ($p) use ($id) {
-            return $p['id'] != $id;
+            $pId = is_array($p) ? $p['id'] : $p->id;
+            return $pId != $id;
         }));
         session()->put('projects_data', $projects);
 
         return redirect()->route('admin.projects.index')->with('success', 'Project berhasil dihapus!');
     })->name('admin.projects.destroy');
-});
 
-// Route Logout (Mengarahkan kembali ke halaman utama / beranda)
-Route::get('/logout', function () {
-    return redirect('/');
-})->name('logout');
+});
