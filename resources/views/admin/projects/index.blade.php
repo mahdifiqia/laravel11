@@ -3,7 +3,11 @@
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="fw-bold text-dark m-0">Data Projects</h2>
-    <a href="{{ route('admin.projects.create') }}" class="btn btn-primary fw-semibold px-3">+ Tambah Project</a>
+    <div>
+        <!-- Tombol Cetak PDF sesuai materi dosen -->
+        <a href="{{ route('admin.projects.pdf') }}" class="btn btn-danger fw-semibold px-3 me-2" target="_blank">Cetak PDF</a>
+        <a href="{{ route('admin.projects.create') }}" class="btn btn-primary fw-semibold px-3">+ Tambah Project</a>
+    </div>
 </div>
 
 <div class="table-responsive">
@@ -24,6 +28,7 @@
             <tr>
                 <td>{{ $index + 1 }}</td>
                 <td>
+                    {{-- Menggunakan format array ($p['image']) karena berbasis session --}}
                     @if(!empty($p['image']))
                         <img src="{{ asset('uploads/projects/' . $p['image']) }}" alt="Project Image" class="rounded shadow-sm" style="width: 70px; height: 45px; object-fit: cover;">
                     @else

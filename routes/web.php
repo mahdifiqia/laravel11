@@ -5,6 +5,7 @@ use App\Http\Controllers\MahasiswaController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\Auth\AdminAuthController;
 use Illuminate\Http\Request;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 // --- RUTE PUBLIK (Bisa diakses siapa saja dari beranda) ---
 Route::get('/', function () {
@@ -18,13 +19,13 @@ Route::get('/about', function () {
     return view('page.about');
 });
 
-// Fungsi helper session untuk data projects
+// Fungsi helper session untuk data projects (sudah disesuaikan dengan gambar yang ada)
 function getProjectsSession() {
     if (!session()->has('projects_data')) {
         session()->put('projects_data', [
-            ['id' => 1, 'title' => 'Sistem ERP Tes', 'tech' => 'PHP, Laravel', 'description' => 'Sistem ERP untuk perusahaan manufaktur.', 'status' => 'active', 'image' => null],
-            ['id' => 2, 'title' => 'Sistem HRIS', 'tech' => 'JavaScript, React', 'description' => 'Sistem HRIS untuk mengelola data karyawan.', 'status' => 'active', 'image' => null],
-            ['id' => 3, 'title' => 'Sistem SCM', 'tech' => 'Python, Django', 'description' => 'Sistem SCM untuk mengelola rantai pasokan.', 'status' => 'active', 'image' => null],
+            ['id' => 1, 'title' => 'Sistem ERP Tes', 'tech' => 'PHP, Laravel', 'description' => 'Sistem ERP untuk perusahaan manufaktur.', 'status' => 'active', 'image' => '1793811318.png'],
+            ['id' => 2, 'title' => 'Sistem HRIS', 'tech' => 'JavaScript, React', 'description' => 'Sistem HRIS untuk mengelola data karyawan.', 'status' => 'active', 'image' => '1793811427.png'],
+            ['id' => 3, 'title' => 'Sistem SCM', 'tech' => 'Python, Django', 'description' => 'Sistem SCM untuk mengelola rantai pasokan.', 'status' => 'active', 'image' => '1793811472.png'],
         ]);
     }
     return session('projects_data');
@@ -140,5 +141,12 @@ Route::prefix('admin')->middleware('auth')->group(function(){
 
         return redirect()->route('admin.projects.index')->with('success', 'Project berhasil dihapus!');
     })->name('admin.projects.destroy');
+
+    // Rute Cetak PDF Data Projects (Aman di dalam grup admin)
+    Route::get('/projects/cetak-pdf', function () {
+        $projects = getProjectsSession();
+        $pdf = Pdf::loadView('admin.projects.export-pdf', compact('projects'));
+        return $pdf->download('laporan-projects.pdf');
+    })->name('admin.projects.pdf');
 
 });
